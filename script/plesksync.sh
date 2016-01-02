@@ -141,7 +141,7 @@ sync_database() {
 		mysqldump -u admin -p$(cat /etc/psa/.psa.shadow) --opt $db > dbdumps/$db.sql 2>>db_sync.log
 	done
 	#move the dumps to the new server
-	rsync -avHlPze "ssh -q -p$TARGET_PORT" dbdumps $TARGET_USER@$TARGET:/var/dbdumps
+	rsync -avHlPze "ssh -q -p$TARGET_PORT" dbdumps $TARGET_USER@$TARGET:/var/
 	#start import of databases in screen on target
 	dbsyncscript
 }
