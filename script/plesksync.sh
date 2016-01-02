@@ -13,9 +13,14 @@
 
 #SETTINGS
 settings(){
-	TARGET_USER=$1
+#in case of error edit here and run with screen!    
+    TARGET_USER=$1
     TARGET=$2
     TARGET_PORT=$3
+#####################
+#   DANGER ZONE     #
+#####################
+#DON'T EDIT!
     LOG_FILE=migrationlog.log
     red='\e[1;31m'
     green='\e[1;32m'
@@ -103,7 +108,7 @@ check(){
 
 #INSTALL
 install_backup(){
-    echo -e "${purple}Installing PMM and other utilities on remote server...${noclr}"
+    echo -e "${purple}Installing PMM and other utilities on remote server...${noclr}" ; read
     ssh -q -p$TARGET_PORT -l$TARGET_USER $TARGET "/usr/local/psa/admin/bin/autoinstaller --select-release-current --install-component pmm --install-component horde --install-component mailman --install-component backup"
 	echo -e "${purple}Starting PMM install on the local server...${noclr}" ; read
 	/usr/local/psa/admin/bin/autoinstaller --select-release-current --install-component pmm --install-component backup
@@ -185,7 +190,6 @@ main(){
     settings
     #premigrate
     check
-    sshkeygen
     install
     readme; read
     #migrate
