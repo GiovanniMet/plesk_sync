@@ -5,15 +5,21 @@
 # Developed By Giovanni Metitieri, follow me on Github!        #
 #                         https://github.com/GiovanniMet/      #
 ################################################################
-# Version 1.0                                                  #
 # Build Date 01/2016                                           #
 ################################################################
 
 restore(){
     if [ -d /var/dbdumps ]; then
+	echo "Import correctly:" > db_sync.log
+	echo "Fail to import:" > db_sync.err
         for each in `ls /var/dbdumps | grep sql | cut -d. -f1`; do
-            echo " importing $each" >> db_sync.log
-		      $(mysql -u admin -p$(cat /etc/psa/.psa.shadow) $each < /var/dbdumps/$each.sql)  2>>db_sync.log
+            echo " importing $each in server"
+		$(mysql -u admin -p$(cat /etc/psa/.psa.shadow) $each < /var/dbdumps/$each.sql)
+		 if [ $? -eq 0 ]; then
+        		echo "OK: $each" >> db_sync.log
+		else
+			echo "ERROR: $each" >> db_sync.err
+		fi
             done
     else
 	   echo "/var/dbdumps not found. Press a key to continue"; read
