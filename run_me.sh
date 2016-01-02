@@ -29,8 +29,8 @@ sshkeygen() {
 		ssh-keygen -q -N "" -t rsa -f ~/.ssh/id_rsa
     fi
     echo -e "${purple}Copying key to remote server...${noclr}"
-	ssh-copy-id -p$TARGET_PORT -i ~/.ssh/id_rsa.pub $TARGET_USER@$TARGET
-	ssh -q $TARGET_USER@$TARGET -p$TARGET_PORT "echo \'Connected!\';  cat /etc/hosts| grep $TARGET "; read
+	ssh-copy-id -i ~/.ssh/id_rsa.pub "$TARGET_USER@$TARGET -p$TARGET_PORT"
+	ssh -q $TARGET_USER@$TARGET -p$TARGET_PORT "echo \'Connected! Press a KEY to continue.\';  cat /etc/hosts| grep $TARGET "; read
 }
 
 download(){

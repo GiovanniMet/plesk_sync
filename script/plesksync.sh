@@ -40,9 +40,9 @@ EOF
 
 
 restart_plesk(){
-    ssh -q $TARGET_USER@$TARGET -p$TARGET_PORT "/etc/init.d/psa stopall"
+    ssh -q -l$TARGET_USER -p$TARGET_PORT $TARGET "/etc/init.d/psa stopall"
     check_ok
-    ssh -q $TARGET_USER@$TARGET -p$TARGET_PORT "/etc/init.d/psa start"
+    ssh -q -l$TARGET_USER -p$TARGET_PORT $TARGET "/etc/init.d/psa start"
     check_ok
 }
 
@@ -85,11 +85,11 @@ check_rsync(){
 }
 
 check_target(){
-    ssh -p$TARGET_PORT $TARGET_USER@$TARGET "$(typeset -f); check_root"
+    ssh -p$TARGET_PORT -l$TARGET_USER $TARGET "$(typeset -f); check_root"
     check_ok
-    ssh -p$TARGET_PORT $TARGET_USER@$TARGET "$(typeset -f); check_awk"
+    ssh -p$TARGET_PORT -l$TARGET_USER $TARGET "$(typeset -f); check_awk"
     check_ok
-    ssh -p$TARGET_PORT $TARGET_USER@$TARGET "$(typeset -f); check_rsync"
+    ssh -p$TARGET_PORT -l$TARGET_USER $TARGET "$(typeset -f); check_rsync"
     check_ok
 }
 
@@ -104,7 +104,7 @@ check(){
 #INSTALL
 install_backup(){
     echo -e "${purple}Installing PMM and other utilities on remote server...${noclr}"
-    ssh -q $TARGET_USER@$TARGET -p$TARGET_PORT "/usr/local/psa/admin/bin/autoinstaller --select-release-current --install-component pmm --install-component horde --install-component mailman --install-component backup"
+    ssh -q -p$TARGET_PORT -l$TARGET_USER $TARGET "/usr/local/psa/admin/bin/autoinstaller --select-release-current --install-component pmm --install-component horde --install-component mailman --install-component backup"
 	echo -e "${purple}Starting PMM install on the local server...${noclr}"
 	/usr/local/psa/admin/bin/autoinstaller --select-release-current --install-component pmm --install-component backup
 }
@@ -134,7 +134,7 @@ dbsyncscript () { #create a script to restore the databases on the target server
 EOF
         
     rsync -aHPe "ssh -q -p$TARGET_PORT" dbsync.sh $TARGET_USER@$TARGET:/var/dbdumps
-	ssh -q $TARGET_USER@$TARGET -p$TARGET_PORT "screen -S dbsync -d -m bash /var/dbsync.sh" &
+	ssh -q -l$TARGET_USER -p$TARGET_PORT $TARGET "screen -S dbsync -d -m bash /var/dbsync.sh" &
 	echo -e "${white}Databases are importing in a screen on the target server. Be sure to check there to make sure they all imported OK.${noclr}"
 	sleep 2
 }
@@ -154,7 +154,7 @@ sync_database() {
 
 sync_web(){
     for each in `mysql -u admin -p$(cat /etc/psa/.psa.shadow) -Ns psa -e "select name from domains;"`; do
-	   if [ `ssh -q $TARGET_USER@$TARGET -p$TARGET_PORT "ls /var/www/vhosts/ | grep ^$each$"` ]; then
+	   if [ `ssh -q -l$TARGET_USER -p$TARGET_PORT $TARGET "ls /var/www/vhosts/ | grep ^$each$"` ]; then
 	       echo -e "${purple}Syncing data for ${white}$each${purple}...${noclr}"
 	       rsync -avHPe "ssh -q -pTARGET_PORT" /var/www/vhosts/$each $TARGET_USER@$TARGET:/var/www/vhosts/ --exclude=conf >> web_sync.log 2>&1
 	       rsync -avHPe "ssh -q -pTARGET_PORT" /var/www/vhosts/$each/httpdocs $TARGET_USER@$TARGET:/var/www/vhosts/$each/ --update >> web_sync.log 2>&1
@@ -176,7 +176,7 @@ sync(){
 migrate(){
     /usr/local/psa/bin/pleskbackup server -c --verbose --skip-logs --output-file=plesk_backup_server.tar #BACKUP
     scp -P$TARGET_PORT plesk_backup_server.tar root@$TARGET:/var/plesk_backup_server.tar #UPLOAD ON TARGET SERVER
-	ssh -q $TARGET_USER@$TARGET -p$TARGET_PORT "/usr/local/psa/bin/pleskrestore --restore /var/plesk_backup_server.tar -level server -verbose -ignore-sign"  #RESTORE     
+	ssh -q -l$TARGET_USER -p$TARGET_PORT $TARGET "/usr/local/psa/bin/pleskrestore --restore /var/plesk_backup_server.tar -level server -verbose -ignore-sign"  #RESTORE     
 }
 
 #MAIN
