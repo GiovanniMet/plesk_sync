@@ -105,8 +105,7 @@ check(){
 install_backup(){
     echo -e "${purple}Installing PMM and other utilities on remote server...${noclr}"
     ssh -q -p$TARGET_PORT -l$TARGET_USER $TARGET "/usr/local/psa/admin/bin/autoinstaller --select-release-current --install-component pmm --install-component horde --install-component mailman --install-component backup"
-	echo -e "${purple}Starting PMM install on the local server...${noclr}"
-    ; read
+	echo -e "${purple}Starting PMM install on the local server...${noclr}" ; read
 	/usr/local/psa/admin/bin/autoinstaller --select-release-current --install-component pmm --install-component backup
 }
 
