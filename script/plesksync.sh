@@ -126,20 +126,9 @@ sync_email() {
 }
 
 dbsyncscript () { #create a script to restore the databases on the target server, then run it there in a screen
-    cat > dbsync.sh << EOF
-	#!/bin/bash
-    if [ -d /var/dbdumps ]; then
-        for each in `ls *.sql|cut -d. -f1`; do
-            echo " importing $each" >> db_sync.log
-		      $(mysql -u admin -p$(cat /etc/psa/.psa.shadow) $each < /var/dbdumps/$each.sql)  2>>db_sync.log
-            done
-    else
-	   echo "/var/dbdumps not found. Press a key to continue"; read
-    fi
-EOF
-        
-    rsync -aHPe "ssh -q -p$TARGET_PORT" dbsync.sh $TARGET_USER@$TARGET:/var/dbdumps
-	ssh -q -l$TARGET_USER -p$TARGET_PORT $TARGET "screen -S dbsync -d -m bash /var/dbsync.sh" &
+    wget -O pleskrestoredb.sh "https://raw.githubusercontent.com/GiovanniMet/plesk_sync/master/script/pleskrestoredb.sh" --no-check-certificate -nv
+    rsync -aHPe "ssh -q -p$TARGET_PORT" pleskrestoredb.sh $TARGET_USER@$TARGET:/var/dbdumps
+	ssh -q -l$TARGET_USER -p$TARGET_PORT $TARGET "screen -S dbsync -d -m bash /var/dbdumps/pleskrestoredb.sh" &
 	echo -e "${white}Databases are importing in a screen on the target server. Be sure to check there to make sure they all imported OK.${noclr}"
 	sleep 2
 }
