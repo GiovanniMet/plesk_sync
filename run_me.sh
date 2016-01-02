@@ -56,7 +56,7 @@ migrate_now(){
 	while true; do
     read -p "Do you want start migrate? " yn
     case $yn in
-        [Yy]* ) sh plesk_sync/plesksync.sh $TARGET_USER $TARGET $TARGET_PORT ; break;;
+        [Yy]* ) screen -S migrate -m sh plesk_sync/plesksync.sh $TARGET_USER $TARGET $TARGET_PORT ; break;;
         [Nn]* ) break;;
         * ) echo "Please answer yes or no.";;
     esac

@@ -106,6 +106,7 @@ install_backup(){
     echo -e "${purple}Installing PMM and other utilities on remote server...${noclr}"
     ssh -q -p$TARGET_PORT -l$TARGET_USER $TARGET "/usr/local/psa/admin/bin/autoinstaller --select-release-current --install-component pmm --install-component horde --install-component mailman --install-component backup"
 	echo -e "${purple}Starting PMM install on the local server...${noclr}"
+    ; read
 	/usr/local/psa/admin/bin/autoinstaller --select-release-current --install-component pmm --install-component backup
 }
 
@@ -156,9 +157,9 @@ sync_web(){
     for each in `mysql -u admin -p$(cat /etc/psa/.psa.shadow) -Ns psa -e "select name from domains;"`; do
 	   if [ `ssh -q -l$TARGET_USER -p$TARGET_PORT $TARGET "ls /var/www/vhosts/ | grep ^$each$"` ]; then
 	       echo -e "${purple}Syncing data for ${white}$each${purple}...${noclr}"
-	       rsync -avHPe "ssh -q -pTARGET_PORT" /var/www/vhosts/$each $TARGET_USER@$TARGET:/var/www/vhosts/ --exclude=conf >> web_sync.log 2>&1
-	       rsync -avHPe "ssh -q -pTARGET_PORT" /var/www/vhosts/$each/httpdocs $TARGET_USER@$TARGET:/var/www/vhosts/$each/ --update >> web_sync.log 2>&1
-           rsync -avHPe "ssh -q -pTARGET_PORT" /var/www/vhosts/$each/httpsdocs $TARGET_USER@$TARGET:/var/www/vhosts/$each/ --update >> web_sync.log 2>&1
+	       rsync -avHPe "ssh -q -p$TARGET_PORT" /var/www/vhosts/$each $TARGET_USER@$TARGET:/var/www/vhosts/ --exclude=conf >> web_sync.log 2>&1
+	       rsync -avHPe "ssh -q -p$TARGET_PORT" /var/www/vhosts/$each/httpdocs $TARGET_USER@$TARGET:/var/www/vhosts/$each/ --update >> web_sync.log 2>&1
+           rsync -avHPe "ssh -q -p$TARGET_PORT" /var/www/vhosts/$each/httpsdocs $TARGET_USER@$TARGET:/var/www/vhosts/$each/ --update >> web_sync.log 2>&1
 	   else
 	       echo -e "${red}$each did not restore remotely${noclr}"
 	       echo -e $each >> web_sync.err
