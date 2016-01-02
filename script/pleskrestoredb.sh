@@ -11,7 +11,7 @@
 
 restore(){
     if [ -d /var/dbdumps ]; then
-        for each in `ls /var/dbdumps *.sql|cut -d. -f1`; do
+        for each in `ls /var/dbdumps | grep sql | cut -d. -f1`; do
             echo " importing $each" >> db_sync.log
 		      $(mysql -u admin -p$(cat /etc/psa/.psa.shadow) $each < /var/dbdumps/$each.sql)  2>>db_sync.log
             done
