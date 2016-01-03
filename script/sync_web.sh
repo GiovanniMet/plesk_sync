@@ -17,9 +17,9 @@ sync_web(){
             rsync -avHPe "ssh -q -p$TARGET_PORT" /var/www/vhosts/$each $TARGET_USER@$TARGET:/var/www/vhosts/ --exclude=conf >> web_sync.log 2>&1
             rsync -avHPe "ssh -q -p$TARGET_PORT" /var/www/vhosts/$each/httpdocs $TARGET_USER@$TARGET:/var/www/vhosts/$each/ --update >> web_sync.log 2>&1
             rsync -avHPe "ssh -q -p$TARGET_PORT" /var/www/vhosts/$each/httpsdocs $TARGET_USER@$TARGET:/var/www/vhosts/$each/ --update >> web_sync.log 2>&1
-        elif [ `mysql -u admin -p$(cat /etc/psa/.psa.shadow) -Ns psa -e "select htype from domains where name = "$each";"` -eq "std_fwd" ]; then #check Redirect
+        elif [ `mysql -u admin -p$(cat /etc/psa/.psa.shadow) -Ns psa -e "select htype from domains where name = '$each';"` ==  "std_fwd" ]; then #check Redirect #check Redirect
             echo -e "${purple}$each ${white}is a redirect{purple}...${noclr}"
-        elif [ `ssh -q -l$TARGET_USER -p$TARGET_PORT $TARGET "ls /var/www/vhosts/$DOMAIN/subdomains/ | grep ^$SUBDOMAIN$"` ]; then
+        elif [ `ssh -q -l$TARGET_USER -p$TARGET_PORT $TARGET "ls /var/www/vhosts/$DOMAIN/subdomains/ | grep ^$SUBDOMAIN"` ]; then
             echo -e "${purple}Syncing data for ${white}$each${purple}...${noclr}"
             rsync -avHPe "ssh -q -p$TARGET_PORT" /var/www/vhosts/$DOMAIN/subdomains/$SUBDOMAIN/ $TARGET_USER@$TARGET:/var/www/vhosts/$DOMAIN/subdomains/$SUBDOMAIN/ --exclude=conf >> web_sync.log 2>&1
             rsync -avHPe "ssh -q -p$TARGET_PORT" /var/www/vhosts/$DOMAIN/subdomains/$SUBDOMAIN/httpdocs $TARGET_USER@$TARGET:/var/www/vhosts/$DOMAIN/subdomains/$SUBDOMAIN/ --update >> web_sync.log 2>&1
