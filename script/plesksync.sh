@@ -13,7 +13,7 @@
 
 #SETTINGS
 settings(){
-#in case of error edit here and run with screen!    
+#in case of error edit here and run with screen!
     TARGET_USER=$1
     TARGET=$2
     TARGET_PORT=$3
@@ -34,12 +34,7 @@ settings(){
 #UTILITY
 readme(){
     cat <<- EOF
-	Please start plesk migrator and check prerequisite, after fixed server go here and continue!
-    db_sync.log -> Log Sync DB
-    mail_sync.log -> Log Sync Mail
-    web_sync.err -> Log Sync Web with error
-    web_sync.log -> Log Sync Web good
-    migrationlog.log -> General Log
+    Please start plesk migrator and check prerequisite, after fixed server go here and continue!
 EOF
 }
 
@@ -63,33 +58,34 @@ check_ok(){
 
 check_awk() {
     if ! [ -x /usr/bin/awk ]; then
-        cprint RED "[FATAL] This script needs awk to be executed."; read
+        echo "${red}[FATAL] This script needs awk to be executed.${noclr}"; read
         exit 1
     fi
 }
 
 check_screen(){
     if [[ ! "${STY}" ]]; then
-	   echo -e "${red}Please run this script in a screen session!${noclr}"; read
-       exit 1
-	fi
+        echo "${red}Please run this script in a screen session!${noclr}"; read
+        exit 1
+    fi
 }
 
 check_root(){
-	if [ "$(id -u)" != "0" ]; then
-		echo "Sorry, you are not root. Script now exit."; read
-		exit 1
-	fi
+    if [ "$(id -u)" != "0" ]; then
+        echo "Sorry, you are not root. Script now exit."; read
+        exit 1
+    fi
 }
 
 check_rsync(){
     if ! [ -x /usr/bin/rsync ]; then
-        cprint RED "[FATAL] This script needs rsync to be executed."; read
+        echo "${red}[FATAL] This script needs rsync to be executed.${noclr}"; read
         exit 1
     fi
 }
 
 check_target(){
+    echo "Check target server"
     ssh -p$TARGET_PORT -l$TARGET_USER $TARGET "$(typeset -f); check_root"
     check_ok
     ssh -p$TARGET_PORT -l$TARGET_USER $TARGET "$(typeset -f); check_awk"
@@ -108,10 +104,10 @@ check(){
 
 #INSTALL
 install_backup(){
-    echo -e "${purple}Installing PMM and other utilities on remote server...${noclr}" ; read
+    echo -e "${purple}Installing PMM and other utilities on remote server...${noclr}"
     ssh -q -p$TARGET_PORT -l$TARGET_USER $TARGET "/usr/local/psa/admin/bin/autoinstaller --select-release-current --install-component pmm --install-component horde --install-component mailman --install-component backup"
-	echo -e "${purple}Starting PMM install on the local server...${noclr}" ; read
-	/usr/local/psa/admin/bin/autoinstaller --select-release-current --install-component pmm --install-component backup
+    echo -e "${purple}Starting PMM install on the local server...${noclr}"
+    /usr/local/psa/admin/bin/autoinstaller --select-release-current --install-component pmm --install-component backup
 }
 
 install(){
@@ -121,29 +117,30 @@ install(){
 #SYNC
 sync_email() {
 #rsync the whole mail folder
-	echo -e "${white}Syncing email...${noclr}"
-	rsync -avHPe "ssh -q -p$TARGET_PORT" /var/qmail/mailnames/ $TARGET_USER@$TARGET:/var/qmail/mailnames/ --update >> mail_sync.log 2>&1
+    echo -e "${white}Syncing email...${noclr}"
+    rsync -avHPe "ssh -q -p$TARGET_PORT" /var/qmail/mailnames/ $TARGET_USER@$TARGET:/var/qmail/mailnames/ --update > mail_sync.log 2>&1
 }
 
-dbsyncscript () { #create a script to restore the databases on the target server, then run it there in a screen
+dbsyncscript () { 
+#download a script to restore the databases on the target server, then run it in a screen session
     wget -O pleskrestoredb.sh "https://raw.githubusercontent.com/GiovanniMet/plesk_sync/master/script/pleskrestoredb.sh" --no-check-certificate -nv
     rsync -aHPe "ssh -q -p$TARGET_PORT" pleskrestoredb.sh $TARGET_USER@$TARGET:/var/dbdumps
-	ssh -q -l$TARGET_USER -p$TARGET_PORT $TARGET "screen -S dbsync -d -m bash /var/dbdumps/pleskrestoredb.sh" &
-	echo -e "${white}Databases are importing in a screen on the target server. Be sure to check there to make sure they all imported OK.${noclr}"
-	sleep 2
+    ssh -q -l$TARGET_USER -p$TARGET_PORT $TARGET "screen -S dbsync -d -m bash /var/dbdumps/pleskrestoredb.sh"
+    echo -e "${white}Databases are importing in a screen on the target server. Be sure to check there to make sure they all imported OK.${noclr}"
+    sleep 2
 }
 
 sync_database() {
-	#perform just a database sync, reimporting on the target side.
-	echo -e "${white}Dumping the databases...${noclr}"
-	mkdir -p dbdumps
-	for db in `mysql -u admin -p$(cat /etc/psa/.psa.shadow) -Ns -e "show databases" | egrep -v "^(psa|mysql|horde|information_schema|performance_schema|phpmyadmin.*)$"`; do
-		mysqldump -u admin -p$(cat /etc/psa/.psa.shadow) --opt $db > dbdumps/$db.sql 2>>db_sync.log
-	done
-	#move the dumps to the new server
-	rsync -avHlPze "ssh -q -p$TARGET_PORT" dbdumps $TARGET_USER@$TARGET:/var/
-	#start import of databases in screen on target
-	dbsyncscript
+    #perform just a database sync, reimporting on the target side.
+    echo -e "${white}Dumping the databases...${noclr}"
+    mkdir -p dbdumps
+    for db in `mysql -u admin -p$(cat /etc/psa/.psa.shadow) -Ns -e "show databases" | egrep -v "^(psa|mysql|horde|information_schema|performance_schema|phpmyadmin.*)$"`; do
+        mysqldump -u admin -p$(cat /etc/psa/.psa.shadow) --opt $db > dbdumps/$db.sql
+    done
+    #move the dumps to the new server
+    rsync -avHlPze "ssh -q -p$TARGET_PORT" dbdumps $TARGET_USER@$TARGET:/var/
+    #start import of databases in screen on target
+    dbsyncscript
 }
 
 sync_web(){
@@ -169,7 +166,7 @@ sync_web(){
         else
             echo -e "${red}$each did not restore remotely${noclr}"
             echo -e $each >> web_sync.err
-       fi
+        fi
     done
 }
 
@@ -183,9 +180,8 @@ sync(){
 migrate(){
     /usr/local/psa/bin/pleskbackup server -c --verbose --skip-logs --output-file=plesk_backup_server.tar #BACKUP
     scp -P$TARGET_PORT plesk_backup_server.tar root@$TARGET:/var/plesk_backup_server.tar #UPLOAD ON TARGET SERVER
-	ssh -q -l$TARGET_USER -p$TARGET_PORT $TARGET "/usr/local/psa/bin/pleskrestore --restore /var/plesk_backup_server.tar -level server -verbose -ignore-sign"  #RESTORE     
+    ssh -q -l$TARGET_USER -p$TARGET_PORT $TARGET "/usr/local/psa/bin/pleskrestore --restore /var/plesk_backup_server.tar -level server -verbose -ignore-sign" #RESTORE
 }
-
 #MAIN
 #HERE YOU CAN COMMENT FUNCTION
 main(){

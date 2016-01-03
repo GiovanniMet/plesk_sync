@@ -10,9 +10,9 @@
 ################################################################
 
 settings(){
-	TARGET=127.0.0.1
-	TARGET_PORT=22
 	TARGET_USER=root
+    TARGET=$1
+	TARGET_PORT=22
 }
 
 check_root(){
@@ -35,21 +35,9 @@ sshkeygen() {
 
 download(){
 	mkdir -p plesk_sync
-	wget -O plesk_sync/pleskbackupdb.sh "https://raw.githubusercontent.com/GiovanniMet/plesk_sync/master/script/pleskbackupdb.sh" --no-check-certificate -nv
 	wget -O plesk_sync/plesksync.sh "https://raw.githubusercontent.com/GiovanniMet/plesk_sync/master/script/plesksync.sh" --no-check-certificate -nv
 	wget -O plesk_sync/pleskinstall.sh "https://raw.githubusercontent.com/GiovanniMet/plesk_install/master/pleskinstall.sh" --no-check-certificate -nv
 	chmod +x -R plesk_sync/
-}
-
-backup_database(){
-	while true; do
-    read -p "Do you want backup Database? " yn
-    case $yn in
-        [Yy]* ) sh plesk_sync/pleskbackupdb.sh; break;;
-        [Nn]* ) break;;
-        * ) echo "Please answer yes or no.";;
-    esac
-	done
 }
 
 migrate_now(){
@@ -96,6 +84,12 @@ plesk_check(){
 alldone(){
 cat <<- EOF
 	All done!
+    You can check log:
+    db_sync.log -> Log Sync DB
+    mail_sync.log -> Log Sync Mail
+    web_sync.err -> Log Sync Web with error
+    web_sync.log -> Log Sync Web good
+    migrationlog.log -> General Log
 EOF
 }
 
@@ -104,7 +98,6 @@ main(){
 	settings
     check_root
     download
-    backup_database
     sshkeygen
     plesk_check
     migrate_now
