@@ -11,4 +11,5 @@ line_to_domain_subdomain(){
 	done
 	echo "Done!"
 }
+
 line_to_domain_subdomain
