@@ -110,7 +110,7 @@ install_backup(){
     /usr/local/psa/admin/bin/autoinstaller --select-release-current --install-component pmm --install-component backup
 }
 install_mcrypt(){
-    apt-get install -y php5-mcrypt mcrypt
+    ssh -q -l$TARGET_USER -p$TARGET_PORT $TARGET "apt-get install -y php5-mcrypt mcrypt"
 }
 
 install(){
