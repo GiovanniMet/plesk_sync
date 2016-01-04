@@ -7,7 +7,7 @@
 ################################################################
 # Version 1.0 alpha                                            #
 # Build Date 21/12/2015                                        #
-# Support Debian and RHEL based distro.                        #
+# Support Debian based distro.                                 #
 # Use only Plesk CMD, screen, rsync, and POSIX command         #
 ################################################################
 
@@ -109,9 +109,13 @@ install_backup(){
     echo -e "${purple}Starting PMM install on the local server...${noclr}"
     /usr/local/psa/admin/bin/autoinstaller --select-release-current --install-component pmm --install-component backup
 }
+install_mcrypt(){
+    apt-get install -y php5-mcrypt mcrypt
+}
 
 install(){
     install_backup
+    install_mcrypt
 }
 
 #SYNC
