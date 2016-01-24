@@ -41,7 +41,7 @@ server(){
 	echo "Enter Server IP:"
 	read ip
 	echo "IP: $ip"
-	if [ `valid_ip $ip` ]; then 
+	if [ $(valid_ip $ip) ]; then 
 		echo "Is a valid ip"; 
 	else 
 		echo "Is a bad ip, exit"
