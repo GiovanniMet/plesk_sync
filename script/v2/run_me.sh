@@ -48,6 +48,7 @@ setup(){
 }
 run(){
 	echo "Now Run Script: 'cd plesk_sync && screen ./start.sh'"
+	cd plesk_sync && screen ./start.sh
 }
 main(){
 	download
