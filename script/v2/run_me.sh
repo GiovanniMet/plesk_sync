@@ -47,9 +47,7 @@ setup(){
 	edit_settings
 }
 run(){
-	echo "Press a key to start script.";read
-	cd plesk_sync
-	screen ./start.sh
+	echo "Now Run Script: 'cd plesk_sync && screen ./start.sh'"
 }
 main(){
 	download
