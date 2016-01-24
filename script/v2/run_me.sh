@@ -20,34 +20,10 @@ download(){
 	chmod +x -R plesk_sync/
 }
 
-function valid_ip()
-{
-    local  ip=$1
-    local  stat=1
-
-    if [[ $ip =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
-        OIFS=$IFS
-        IFS='.'
-        ip=($ip)
-        IFS=$OIFS
-        [[ ${ip[0]} -le 255 && ${ip[1]} -le 255 \
-            && ${ip[2]} -le 255 && ${ip[3]} -le 255 ]]
-        stat=$?
-    fi
-    return $stat
-}
-
 server(){
 	echo "Enter Server IP:"
 	read ip
 	echo "IP: $ip"
-	if [ $(valid_ip $ip) ]; then 
-		echo "Is a valid ip"; 
-	else 
-		echo "Is a bad ip, exit"
-		exit 1
-	fi
-	
 }
 port(){
 	echo "Enter Server Port:"
