@@ -48,7 +48,8 @@ setup(){
 }
 run(){
 	echo "Press a key to start script.";read
-	screen ./plesk_sync/start.sh
+	cd plesk_sync
+	screen ./start.sh
 }
 main(){
 	download
