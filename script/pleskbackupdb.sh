@@ -15,7 +15,7 @@ backup(){
     date=$(/bin/date +%HHours%m-%d-%Y)
     mkdir -p $datadumpdir$date
     echo "Creating MySQL dumps in $datadumpdir$date .."
-    for i in `mysql -u admin -p$(cat /etc/psa/.psa.shadow) -Ns -e "show databases" | egrep -v "^(psa|mysql|horde|performance_schema|information_schema|phpmyadmin.*)"`; do
+    for i in `mysql -u admin -p$(cat /etc/psa/.psa.shadow) -Ns -e "show databases" | egrep -v "^(apsc|sitebuilder5|psa|mysql|horde|information_schema|performance_schema|phpmyadmin.*)"`; do
         mysqldump -u admin -p$(cat /etc/psa/.psa.shadow) --opt $i > $datadumpdir$date/$i.sql;
         echo "Created: $i.sql"
     done
