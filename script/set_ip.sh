@@ -9,6 +9,7 @@ main(){
                 domip=`/usr/local/psa/bin/domain --info $domain | grep address | cut -d\: -f2 | sed -e 's/^[ \t]*//'`;
                 if [ $domip ]; then
                         echo "/usr/local/psa/bin/domain --update $domain -ip$domip" >> update_ip.sh;
+                        echo "OK: $domain verso $domip"
                 fi
         done
         echo "Done!"
