@@ -14,6 +14,9 @@
 download(){
 	mkdir -p plesk_sync
     wget -O plesk_sync/sync.sh "https://raw.githubusercontent.com/GiovanniMet/plesk_sync/master/script/v2/sync.sh" --no-check-certificate -nv
+	wget -O plesk_sync/sync_web.sh "https://raw.githubusercontent.com/GiovanniMet/plesk_sync/master/script/v2/sync_web.sh" --no-check-certificate -nv
+	wget -O plesk_sync/sync_mail.sh "https://raw.githubusercontent.com/GiovanniMet/plesk_sync/master/script/v2/sync_mail.sh" --no-check-certificate -nv
+	wget -O plesk_sync/sync_db.sh "https://raw.githubusercontent.com/GiovanniMet/plesk_sync/master/script/v2/sync_db.sh" --no-check-certificate -nv
 	wget -O plesk_sync/start.sh "https://raw.githubusercontent.com/GiovanniMet/plesk_sync/master/script/v2/start.sh" --no-check-certificate -nv
 	wget -O plesk_sync/settings.sh "https://raw.githubusercontent.com/GiovanniMet/plesk_sync/master/script/v2/settings.sh" --no-check-certificate -nv
 	wget -O plesk_sync/check.sh "https://raw.githubusercontent.com/GiovanniMet/plesk_sync/master/script/v2/check.sh" --no-check-certificate -nv
@@ -50,9 +53,20 @@ run(){
 	echo "Now Run Script: 'cd plesk_sync && screen ./start.sh'"
 	cd plesk_sync && screen ./start.sh
 }
+summary(){
+        echo "DESTINAZIONE: $UTENTE_DESTINAZIONE@$DESTINAZIONE porta $PORTA_DESTINAZIONE"
+        while true; do
+        read -p "E' corretto? " yn
+        case $yn in
+                [YySs]* ) break;;
+                [Nn]* ) setup;;
+                * ) echo "Rispondi [s]i o [n]o.";;
+        esac
+        done
+}
 main(){
 	download
-	setup
+	summary
 	run
 }
 main

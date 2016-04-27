@@ -10,7 +10,13 @@
 # Support Debian based distro.                                 #
 # Use only Plesk CMD, screen, rsync, and POSIX command         #
 ################################################################
-
+red='\e[1;31m'
+green='\e[1;32m'
+yellow='\e[1;33m'
+blue='\e[1;34m'
+purple='\e[1;35m'
+white='\e[1;37m'
+noclr='\e[0m'
 #SOURCE
 source settings.sh
 source check.sh

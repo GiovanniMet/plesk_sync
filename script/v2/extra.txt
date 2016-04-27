@@ -1,0 +1,136 @@
+#!/bin/bash
+##########################################################################
+# Plesk sync script                                                      #
+# versione 0.1                                                           #
+# Copyright (c) 2016 Giovanni Metitieri <giovanni.m@seeweb.it>           #
+#                                                                        #
+# This program is free software; you can redistribute it and/or modify   #
+# it under the terms of the GNU General Public License as published by   #
+# the Free Software Foundation; either version 2 of the License, or      #
+# (at your option) any later version.                                    #
+#                                                                        #
+##########################################################################
+
+riepilogo(){
+        echo "SORGENTE: $UTENTE_SORGENTE@$SORGENTE porta $PORTA_SORGENTE"
+        echo "DESTINAZIONE: $UTENTE_DESTINAZIONE@$DESTINAZIONE porta $PORTA_DESTINAZIONE"
+        echo "DOMINIO: $DOMINIO"
+        while true; do
+        read -p "E' corretto? " yn
+        case $yn in
+                [YySs]* ) break;;
+                [Nn]* ) main;;
+                * ) echo "Rispondi [s]i o [n]o.";;
+        esac
+        done
+}
+get_ip(){
+        echo "Digita l' indirizzo ip"
+        read IP
+        echo "$IP" > tmp
+}
+get_porta(){
+        echo "Digita la porta del server"
+        read PORTA
+        echo "$PORTA" > tmp
+}
+get_utente(){
+        echo "Digita l' utente del server"
+        read UTENTE
+        echo "$UTENTE" > tmp
+}
+get_dominio(){
+        echo "Digita il dominio senza www"
+        read DOMINIO
+}
+get_sorgente(){
+        echo "Server Sorgente:"
+        get_utente
+        read -r UTENTE_SORGENTE < tmp
+        get_ip
+        read -r SORGENTE < tmp
+        get_porta
+        read -r PORTA_SORGENTE < tmp
+#       echo "$UTENTE_SORGENTE@$SORGENTE porta $PORTA_SORGENTE"
+}
+get_destinazione(){
+        echo "Server di Destinazione:"
+        get_utente
+        read -r UTENTE_DESTINAZIONE < tmp
+        get_ip
+        read -r DESTINAZIONE < tmp
+        get_porta
+        read -r PORTA_DESTINAZIONE < tmp
+#       echo "$UTENTE_DESTINAZIONE@$DESTINAZIONE porta $PORTA_DESTINAZIONE"
+}
+function check_dir_origine(){
+        DIRORIG=/var/www/vhosts/$DOMINIO/
+        CHKDEST=$(ssh -q -p$PORTA_SORGENTE -l$UTENTE_SORGENTE $SORGENTE "cd $DIRORIG && pwd -P" )
+        echo -e "$CHKDEST"
+        if [ "$DIRORIG" = "$CHKDEST" ]; then
+        echo -e "Controllo directory di origine ok, vado avanti. \n"
+        echo -e "Directory di origine: $DIRORIG"
+        else
+        echo -e "La directory di origine non esiste. Controlla ed inserisci la directory corretta: "
+        read DIRORIG
+        fi
+}
+function check_dir_dest(){
+        DIRDEST="/var/www/vhosts/$DOMINIO/"
+        CHKDEST=$(ssh -q -p$PORTA_DESTINAZIONE -l$UTENTE_DESTINAZIONE $DESTINAZIONE "cd $DIRDEST && pwd -P" )
+        echo -e "$CHKDEST"
+        if [ "$DIRDEST" = "$CHKDEST" ]; then
+        echo -e "Controllo directory di destinazione ok, vado avanti. \n"
+        echo -e "Directory di destinazione: $DIRDEST"
+        else
+        echo -e "La directory di destinazione non esiste. Controlla ed inserisci la directory corretta: "
+        read DIRDEST2
+        DIRDEST=$DIRDEST2;
+        fi
+}
+web(){
+        check_dir_origine
+        check_dir_dest
+        echo "Sincronizzo parte WEB"
+        ssh -q -p$PORTA_SORGENTE -l$UTENTE_SORGENTE $SORGENTE "rsync -avHPe "ssh -q -p $PORTA_DESTINAZIONE" $DIRORIG $UTENTE_DESTINAZIONE@$DESTINAZIONE:$DIRDEST --exclude=conf --update" 1>&2 >> _sync.log
+        echo "DEBUG - A MANO SI FA:"
+        echo "# ssh -q -p$PORTA_SORGENTE -l$UTENTE_SORGENTE $SORGENTE "rsync -avHPe "ssh -q -p $PORTA_DESTINAZIONE" $DIRORIG $UTENTE_DESTINAZIONE@$DESTINAZIONE:$DIRDEST --exclude=conf --update""
+}
+get_db(){
+        echo "Digita il nome del DB"
+        read DB
+        echo "$DB" > tmp
+}
+db(){
+        get_db
+        read -r DB < tmp
+        ssh -q -p$PORTA_SORGENTE -l$UTENTE_SORGENTE $SORGENTE "cat /etc/psa/.psa.shadow" > tmp
+        read -r PW < tmp
+        echo "Esporto e copio il DB"
+        ssh -q -p$PORTA_SORGENTE -l$UTENTE_SORGENTE $SORGENTE "mysqldump -u admin -p$PW --opt $DB > $DB.sql" >> _sync.log
+        ssh -q -p$PORTA_SORGENTE -l$UTENTE_SORGENTE $SORGENTE "scp -P$PORTA_DESTINAZIONE $DB.sql $UTENTE_DESTINAZIONE@$DESTINAZIONE:" >> _sync.log
+        echo "Importo il DB"
+        ssh -q -p$PORTA_DESTINAZIONE -l$UTENTE_DESTINAZIONE $DESTINAZIONE "cat /etc/psa/.psa.shadow" > tmp
+        read -r PW < tmp
+        ssh -q -p$PORTA_DESTINAZIONE -l$UTENTE_DESTINAZIONE $DESTINAZIONE "mysql -u admin -p$PW $DB < $DB.sql" >> _sync.log
+        echo "DEBUG - A MANO SI FA:"
+        echo "# ssh -p$PORTA_SORGENTE $UTENTE_SORGENTE@$SORGENTE"
+        echo "# mysqldump -u admin -p`cat /etc/psa/.psa.shadow` --opt $DB > $DB.sql)"
+        echo "# CTRL + D"
+        echo "# ssh -q -p$PORTA_SORGENTE -l$UTENTE_SORGENTE $SORGENTE "scp -P$PORTA_DESTINAZIONE $DB.sql $UTENTE_DESTINAZIONE@$DESTINAZIONE:""
+        echo "# ssh -p$PORTA_DESTINAZIONE $UTENTE_DESTINAZIONE@$DESTINAZIONE"
+        echo "# mysql -u admin -p`cat /etc/psa/.psa.shadow` $DB < $DB.sql"
+
+}
+main(){
+        echo "---------------------------" >> _sync.log
+        get_dominio
+        get_sorgente
+        get_destinazione
+        riepilogo
+        web
+        db
+        echo "Pulisco File temporanei"
+        rm -f tmp
+}
+main
