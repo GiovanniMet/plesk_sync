@@ -20,7 +20,7 @@ dbsyncscript () {
 
 sync_database() {
     #perform just a database sync, reimporting on the target side.
-    echo -e "Dumping the databases..."
+    echo "Dumping the databases..."
     mkdir -p dbdumps
     for db in `mysql -u admin -p$(cat /etc/psa/.psa.shadow) -Ns -e "show databases" | egrep -v "^(apsc|sitebuilder5|psa|mysql|horde|information_schema|performance_schema|phpmyadmin.*)$"`; do
         mysqldump -u admin -p$(cat /etc/psa/.psa.shadow) --opt $db > dbdumps/$db.sql
