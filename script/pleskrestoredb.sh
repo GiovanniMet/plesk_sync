@@ -14,7 +14,7 @@ restore(){
 	echo "Fail to import:" > db_sync.err
         for each in `ls /var/dbdumps | grep sql | cut -d. -f1`; do
             echo " importing $each in server"
-		$(mysql -u admin -p$(cat /etc/psa/.psa.shadow) $each < /var/dbdumps/$each.sql)
+		$(gunzip < /var/dbdumps/$each.sql.gz | mysql -u admin -p$(cat /etc/psa/.psa.shadow) $each)
 		 if [ $? -eq 0 ]; then
         		echo "OK: $each" >> db_sync.log
         		rm -f /var/dbdumps/$each.sql
