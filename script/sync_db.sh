@@ -25,6 +25,7 @@ sync_database() {
     for db in `mysql -u admin -p$(cat /etc/psa/.psa.shadow) -Ns -e "show databases" | egrep -v "^(apsc|sitebuilder5|psa|mysql|horde|information_schema|performance_schema|phpmyadmin.*)$"`; do
         echo "DB: $db"
         mysqldump -u admin -p$(cat /etc/psa/.psa.shadow) --opt $db > dbdumps/$db.sql
+        gzip -f dbdumps/$db.sql
     done
     #move the dumps to the new server
     rsync -avHlPze "ssh -q -p$TARGET_PORT" dbdumps $TARGET_USER@$TARGET:/var/
