@@ -17,6 +17,7 @@ restore(){
 		$(mysql -u admin -p$(cat /etc/psa/.psa.shadow) $each < /var/dbdumps/$each.sql)
 		 if [ $? -eq 0 ]; then
         		echo "OK: $each" >> db_sync.log
+        		rm -f /var/dbdumps/$each.sql
 		else
 			echo "ERROR: $each" >> db_sync.err
 		fi
