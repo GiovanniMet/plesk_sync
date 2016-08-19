@@ -17,7 +17,7 @@ restore(){
 		$(gunzip < /var/dbdumps/$each.sql.gz | mysql -u admin -p$(cat /etc/psa/.psa.shadow) $each)
 		 if [ $? -eq 0 ]; then
         		echo "OK: $each" >> db_sync.log
-        		rm -f /var/dbdumps/$each.sql
+        		rm -f /var/dbdumps/$each.sql.gz
 		else
 			echo "ERROR: $each" >> db_sync.err
 		fi
