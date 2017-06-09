@@ -31,7 +31,7 @@ sync_database() {
     rsync -avHlPze "ssh -q -p$TARGET_PORT" dbdumps $TARGET_USER@$TARGET:/var/
     #start import of databases in screen on target
     dbsyncscript
-    rm -f dbdumps
+    rm -rf dbdumps
 }
 
 sync(){
