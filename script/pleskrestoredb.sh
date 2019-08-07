@@ -8,6 +8,8 @@
 # Build Date 01/2016                                           #
 ################################################################
 
+lockfile -r 0 /tmp/pleskrestoredb.tmp || exit 1
+
 restore(){
     if [ -d /var/dbdumps ]; then
 	echo "Import correctly:" > db_sync.log
@@ -28,3 +30,5 @@ restore(){
 }
 
 restore
+
+rm -f /tmp/pleskrestoredb.tmp
